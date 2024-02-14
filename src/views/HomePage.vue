@@ -1,56 +1,40 @@
-<template>
-  <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-title>Blank</ion-title>
-      </ion-toolbar>
-    </ion-header>
+<script lang="ts" setup>
+import {IonButton, IonContent, IonFooter, IonItem, IonPage, IonRow, IonSelect, IonSelectOption} from '@ionic/vue';
+import {useMonths} from "@/composables/useMonths";
+import {ref} from "vue";
+import {Month} from "@/types/types";
 
-    <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Blank</ion-title>
-        </ion-toolbar>
-      </ion-header>
+const STARTING_YEAR = 2024;
+const STARTING_MONTH = 1 // February
 
-      <div id="container">
-        <strong>Ready to create an app?</strong>
-        <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-      </div>
-    </ion-content>
-  </ion-page>
-</template>
+const months = useMonths(STARTING_MONTH, STARTING_YEAR).reverse();
+const selectedMonth = ref<Month>(months.at(0) as Month);
 
-<script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+const compareWith = (m1: Month, m2: Month) => {
+  return m1.label === m2.label
+}
 </script>
 
-<style scoped>
-#container {
-  text-align: center;
-  
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-  
-  color: #8c8c8c;
-  
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
-}
-</style>
+<template>
+  <ion-page>
+    <ion-content fullscreen>
+      <ion-item>
+        <ion-select
+            v-model="selectedMonth"
+            :compare-with="compareWith"
+            label="Scegli un mese"
+            placeholder="Scegli il mese"
+        >
+          <ion-select-option v-for="month in months" :key="month" :value="month">{{ month.label }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-content>
+    <ion-footer>
+      <ion-row class="ion-padding-vertical ion-justify-content-center">
+        <router-link to="/create">
+          <ion-button>Aggiungi una spesa</ion-button>
+        </router-link>
+      </ion-row>
+    </ion-footer>
+  </ion-page>
+</template>
