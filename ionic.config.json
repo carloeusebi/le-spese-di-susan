@@ -1,0 +1,7 @@
+{
+  "name": "lemiespese",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
