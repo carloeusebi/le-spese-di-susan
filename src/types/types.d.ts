@@ -5,9 +5,9 @@ export interface Month {
 }
 
 export interface Expense {
+    id: number;
     date: string;
-    amount: number;
+    amount?: number;
     type: string;
     description: string;
-    dateObject?: Date;
 }
