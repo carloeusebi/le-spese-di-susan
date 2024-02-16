@@ -3,6 +3,7 @@ import {
   AlertButton,
   alertController,
   IonButton,
+  IonCheckbox,
   IonCol,
   IonContent,
   IonFooter,
@@ -45,6 +46,7 @@ const form = reactive<Expense>({
   date: format(new Date(), 'yyyy-MM-dd'),
   amount: undefined,
   type: '',
+  toSplit: false,
   description: '',
 });
 
@@ -117,6 +119,7 @@ onIonViewWillEnter(() => {
   form.amount = expense.amount;
   form.date = expense.date;
   form.description = expense.description;
+  form.toSplit = expense.toSplit;
 });
 
 const focusAmountInput = () => {
@@ -130,7 +133,7 @@ const focusAmountInput = () => {
     <ion-header>
       <ion-row class="ion-padding-vertical ion-padding-horizontal ion-justify-content-between ion-align-items-center">
         <ion-col>
-          <ion-button router-direction="back" router-link="/home">
+          <ion-button @click="router.back()">
             <ion-icon slot="icon-only" :icon="caretBack"/>
           </ion-button>
         </ion-col>
@@ -185,7 +188,8 @@ const focusAmountInput = () => {
             Amore, non hai scelto la categoria!
           </div>
         </div>
-
+        <ion-checkbox v-model="form.toSplit" class="ion-padding-vertical" label-placement="end">Da dividere con &lt;3
+        </ion-checkbox>
         <ion-textarea
             v-model="form.description"
             fill="solid"

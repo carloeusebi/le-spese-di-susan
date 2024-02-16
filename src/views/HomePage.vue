@@ -6,6 +6,7 @@ import {
   IonCardHeader,
   IonCardSubtitle,
   IonCardTitle,
+  IonCol,
   IonContent,
   IonFooter,
   IonHeader,
@@ -37,7 +38,9 @@ const compareWith = (m1: Month, m2: Month) => {
 const store = useExpensesStore();
 const expenses = computed(() => store.thisMonthExpenses(selectedMonth.value));
 // noinspection JSUnusedAssignment
-const monthTotalExpenditure = computed(() => expenses.value.reduce((total, expense) => total += Number(expense.amount), 0));
+const calculateTotal = (expenses: Expense[]) => expenses.reduce((total, expense) => total += Number(expense.amount), 0);
+const monthTotalExpenditure = computed(() => calculateTotal(expenses.value));
+const monthToSplitTotal = computed(() => calculateTotal(expenses.value.filter(expense => expense.toSplit)));
 </script>
 
 <template>
@@ -54,9 +57,18 @@ const monthTotalExpenditure = computed(() => expenses.value.reduce((total, expen
         </ion-select>
       </ion-item>
       <ion-row>
-        <ion-text class="ion-padding-vertical ion-padding-horizontal ion-text-center w-full">
-          Totale spese mese: {{ Number(monthTotalExpenditure).toFixed(2) }}€
-        </ion-text>
+        <ion-col>
+          <ion-text class="ion-padding-vertical ion-padding-horizontal ion-text-center w-full">
+            <div>Totale mese:</div>
+            <div>{{ monthTotalExpenditure.toFixed(2) }}€</div>
+          </ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text class="ion-padding-vertical ion-padding-horizontal ion-text-center w-full">
+            <div>Da dividere:</div>
+            <div>{{ monthToSplitTotal.toFixed(2) }}€</div>
+          </ion-text>
+        </ion-col>
       </ion-row>
     </ion-header>
     <ion-content>

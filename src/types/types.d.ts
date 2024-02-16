@@ -9,5 +9,6 @@ export interface Expense {
     date: string;
     amount?: number;
     type: string;
+    toSplit: boolean;
     description: string;
 }
