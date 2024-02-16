@@ -18,7 +18,7 @@ import {
   onIonViewWillEnter,
   useIonRouter,
 } from '@ionic/vue';
-import {reactive, ref} from 'vue';
+import {computed, reactive, ref} from 'vue';
 import {format} from 'date-fns';
 import {Expense} from '@/types/types';
 import {useExpensesStore} from '@/stores/expenses';
@@ -35,14 +35,18 @@ const amountRef = ref<InstanceType<typeof IonInput>>();
 
 const types = ['Casa', 'Salute', 'Spesa', 'Trasporto', 'Animali', 'Fuori', 'Piacere', 'Vacanza', 'Regali', 'Altro'];
 
+const isTitleInvalid = ref(false);
 const isDateInvalid = ref(false);
 const isAmountInvalid = ref(false);
 const isTypeInvalid = ref(false);
+
+const isFormInvalid = computed(() => isTitleInvalid.value || isDateInvalid.value || isAmountInvalid.value || isTypeInvalid.value);
 
 let deleteAlert: HTMLIonAlertElement;
 
 const form = reactive<Expense>({
   id: store.getNextId,
+  title: '',
   date: format(new Date(), 'yyyy-MM-dd'),
   amount: undefined,
   type: '',
@@ -54,6 +58,10 @@ const resetErrors = () => {
   isDateInvalid.value = false;
   isAmountInvalid.value = false;
   isTypeInvalid.value = false;
+};
+
+const validateTitle = () => {
+  isTitleInvalid.value = !form.title.trim() || form.title.length > 20;
 };
 
 const validateDate = () => {
@@ -72,10 +80,11 @@ const validateType = () => {
 
 const onSubmit = () => {
   resetErrors();
+  validateTitle();
   validateDate();
   validateAmount();
   validateType();
-  if (isDateInvalid.value || isAmountInvalid.value || isTypeInvalid.value) {
+  if (isFormInvalid.value) {
     return;
   }
   form.amount = Number(form.amount);
@@ -115,11 +124,12 @@ onIonViewWillEnter(() => {
   const expense = store.getById(Number(route.params.id));
   if (!expense) return;
   form.id = expense.id;
-  form.type = expense.type;
-  form.amount = expense.amount;
+  form.title = expense.title;
   form.date = expense.date;
-  form.description = expense.description;
+  form.amount = expense.amount;
+  form.type = expense.type;
   form.toSplit = expense.toSplit;
+  form.description = expense.description;
 });
 
 const focusAmountInput = () => {
@@ -146,6 +156,17 @@ const focusAmountInput = () => {
     </ion-header>
     <ion-content class="ion-padding-vertical ion-padding-horizontal">
       <form id="expenseForm" @submit.prevent="onSubmit">
+        <ion-input
+            v-model.trim="form.title"
+            :class="{'ion-invalid ion-touched': isTitleInvalid}"
+            error-text="Amore il nome!!"
+            fill="solid"
+            label="Nome della spesa"
+            maxlength="20"
+            placeholder="Max 20 caratteri"
+            @ionBlu="validateTitle"
+            @ionInput="validateTitle"
+        />
         <ion-input
             v-model="form.date"
             :class="{'ion-invalid ion-touched': isDateInvalid}"
@@ -201,7 +222,7 @@ const focusAmountInput = () => {
     </ion-content>
     <ion-footer class="ion-padding-vertical ion-padding-horizontal">
       <ion-button
-          :disabled="isTypeInvalid || isAmountInvalid || isDateInvalid"
+          :disabled="isFormInvalid"
           expand="block"
           form="expenseForm"
           size="large"

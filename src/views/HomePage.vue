@@ -78,11 +78,12 @@ const monthToSplitTotal = computed(() => calculateTotal(expenses.value.filter(ex
             <router-link :to="`/expense/${expense.id}`">
               <ion-card class="expense-card">
                 <ion-card-header>
-                  <ion-card-title>{{ expense.type }}</ion-card-title>
+                  <ion-card-title>{{ expense.title }}</ion-card-title>
                   <ion-card-subtitle>{{ format((expense as Expense).date, 'd LLLL', {locale: it}) }}</ion-card-subtitle>
                 </ion-card-header>
-                <ion-card-content class="expense-amount">
-                  {{ Number(expense.amount).toFixed(2) }} €
+                <ion-card-content>
+                  <div class="expense-amount">{{ Number(expense.amount).toFixed(2) }} €</div>
+                  <div class="ion-text-end">{{ expense.type }}</div>
                 </ion-card-content>
               </ion-card>
             </router-link>

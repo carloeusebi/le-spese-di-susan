@@ -6,6 +6,7 @@ export interface Month {
 
 export interface Expense {
     id: number;
+    title: string;
     date: string;
     amount?: number;
     type: string;
