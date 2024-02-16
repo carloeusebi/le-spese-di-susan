@@ -19,7 +19,7 @@ import {
 } from '@ionic/vue';
 import {useMonths} from '@/composables/useMonths';
 import {computed, ref} from 'vue';
-import {Month} from '@/types/types';
+import {Expense, Month} from '@/types/types';
 import {useExpensesStore} from '@/stores/expenses';
 import {format} from 'date-fns';
 import {it} from 'date-fns/locale';
@@ -36,6 +36,7 @@ const compareWith = (m1: Month, m2: Month) => {
 
 const store = useExpensesStore();
 const expenses = computed(() => store.thisMonthExpenses(selectedMonth.value));
+// noinspection JSUnusedAssignment
 const monthTotalExpenditure = computed(() => expenses.value.reduce((total, expense) => total += Number(expense.amount), 0));
 </script>
 
@@ -66,7 +67,7 @@ const monthTotalExpenditure = computed(() => expenses.value.reduce((total, expen
               <ion-card class="expense-card">
                 <ion-card-header>
                   <ion-card-title>{{ expense.type }}</ion-card-title>
-                  <ion-card-subtitle>{{ format(expense.date, 'd LLLL', {locale: it}) }}</ion-card-subtitle>
+                  <ion-card-subtitle>{{ format((expense as Expense).date, 'd LLLL', {locale: it}) }}</ion-card-subtitle>
                 </ion-card-header>
                 <ion-card-content class="expense-amount">
                   {{ Number(expense.amount).toFixed(2) }} €
@@ -82,7 +83,7 @@ const monthTotalExpenditure = computed(() => expenses.value.reduce((total, expen
     </ion-content>
     <ion-footer>
       <ion-row class="ion-padding-vertical ion-justify-content-center">
-        <ion-button router-direction="back" router-link="/create" size="large">Aggiungi una spesa</ion-button>
+        <ion-button router-direction="forward" router-link="/create" size="large">Aggiungi una spesa</ion-button>
       </ion-row>
     </ion-footer>
   </ion-page>
