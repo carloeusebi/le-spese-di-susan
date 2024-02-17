@@ -25,11 +25,14 @@ import {useExpensesStore} from '@/stores/expenses';
 import {useRoute} from 'vue-router';
 import {useIonToaster} from '@/composables/useIonToaster';
 import {caretBack, trash} from 'ionicons/icons';
+import {useIonLoader} from '@/composables/useIonLoader';
+import {isAxiosError} from 'axios';
 
 const store = useExpensesStore();
 const router = useIonRouter();
 const route = useRoute();
 const toaster = useIonToaster();
+const loader = useIonLoader();
 
 const amountRef = ref<InstanceType<typeof IonInput>>();
 
@@ -78,7 +81,7 @@ const validateType = () => {
   isTypeInvalid.value = !form.type;
 };
 
-const onSubmit = () => {
+const onSubmit = async () => {
   resetErrors();
   validateTitle();
   validateDate();
@@ -88,7 +91,18 @@ const onSubmit = () => {
     return;
   }
   form.amount = Number(form.amount);
-  store.saveExpense({...form});
+  try {
+    await loader.present('Salvando...');
+    await store.saveExpense({...form});
+  } catch (err) {
+    if (isAxiosError(err)) {
+      console.error(err.response?.data.message);
+    }
+  } finally {
+    // noinspection ES6MissingAwait
+    loader.dismiss();
+  }
+  // noinspection ES6MissingAwait
   toaster.load('Spesa salvata con successo!', 'success');
   router.back();
 };

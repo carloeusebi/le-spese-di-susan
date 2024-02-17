@@ -2,6 +2,7 @@ import {defineStore} from 'pinia';
 import {useLocalStorage} from '@vueuse/core';
 import {Expense, Month} from '@/types/types';
 import {differenceInCalendarMonths} from 'date-fns';
+import {useUpdateSheet} from '@/composables/useUpdateSheet';
 
 export const useExpensesStore = defineStore('expenses', {
     state: () => ({
@@ -23,10 +24,10 @@ export const useExpensesStore = defineStore('expenses', {
                 return expenseDate.getMonth() === target.month && expenseDate.getFullYear() === target.year;
             }).sort((e1, e2) => new Date(e1.date) < new Date(e2.date) ? 1 : -1);
         },
-        saveExpense(expense: Expense) {
+        async saveExpense(expense: Expense) {
             const index = this.expenses.findIndex(({id}) => id == expense.id);
-            if (index !== -1) this._updateExpense(expense, index);
-            else this._createExpense(expense);
+            if (index !== -1) await this._updateExpense(expense, index);
+            else await this._createExpense(expense);
         },
         deleteExpense(id: number) {
             this.expenses = [...this.expenses.filter(expense => expense.id != id)];
@@ -36,11 +37,14 @@ export const useExpensesStore = defineStore('expenses', {
             const lessThanTwoYears = (date: string) => differenceInCalendarMonths(now, new Date(date)) <= 24;
             this.expenses = [...this.expenses.filter(({date}) => lessThanTwoYears(date))];
         },
-        _createExpense(expense: Expense) {
+        async _createExpense(expense: Expense) {
             this.expenses.push(expense);
             ++this.nextId;
+            if (expense.toSplit) {
+                await useUpdateSheet().addRow(expense);
+            }
         },
-        _updateExpense(expense: Expense, index: number) {
+        async _updateExpense(expense: Expense, index: number) {
             this.expenses[index] = {...expense};
         },
     },
