@@ -13,11 +13,3 @@ export interface Expense {
     toSplit: boolean;
     description: string;
 }
-
-export interface Row {
-    M: string;
-    D: string;
-    Expense: string;
-    Amount: string;
-    Primary: string;
-}
