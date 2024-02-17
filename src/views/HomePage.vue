@@ -25,10 +25,10 @@ import {useExpensesStore} from '@/stores/expenses';
 import {format} from 'date-fns';
 import {it} from 'date-fns/locale';
 
-const STARTING_YEAR = 2024;
-const STARTING_MONTH = 0; // January
+const STARTING_MONTH = import.meta.env.VITE_STARTING_MONTH;
+const STARTING_YEAR = import.meta.env.VITE_STARTING_YEAR;
 
-const months = useMonths(STARTING_MONTH, STARTING_YEAR).reverse();
+const months = useMonths().populateArray(STARTING_MONTH, STARTING_YEAR);
 const selectedMonth = ref<Month>(months.at(0) as Month);
 
 const compareWith = (m1: Month, m2: Month) => {

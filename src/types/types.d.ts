@@ -8,8 +8,12 @@ export interface Expense {
     id: number;
     title: string;
     date: string;
-    amount?: number;
+    amount: number;
     type: string;
     toSplit: boolean;
     description: string;
+}
+
+export interface ExpenseForm extends Expense {
+    amount: number | null;
 }

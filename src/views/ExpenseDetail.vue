@@ -1,8 +1,6 @@
 <!--suppress ES6MissingAwait -->
 <script lang="ts" setup>
 import {
-  AlertButton,
-  alertController,
   IonButton,
   IonCheckbox,
   IonCol,
@@ -21,19 +19,21 @@ import {
 } from '@ionic/vue';
 import {computed, reactive, ref} from 'vue';
 import {format} from 'date-fns';
-import {Expense} from '@/types/types';
+import {Expense, ExpenseForm} from '@/types/types';
 import {useExpensesStore} from '@/stores/expenses';
 import {useRoute} from 'vue-router';
 import {useIonToaster} from '@/composables/useIonToaster';
 import {caretBack, trash} from 'ionicons/icons';
 import {useIonLoader} from '@/composables/useIonLoader';
 import {isAxiosError} from 'axios';
+import {useIonAlert} from '@/composables/useIonAlert';
 
 const store = useExpensesStore();
 const router = useIonRouter();
 const route = useRoute();
 const toaster = useIonToaster();
 const loader = useIonLoader();
+const alert = useIonAlert();
 
 const amountRef = ref<InstanceType<typeof IonInput>>();
 
@@ -46,13 +46,11 @@ const isTypeInvalid = ref(false);
 
 const isFormInvalid = computed(() => isTitleInvalid.value || isDateInvalid.value || isAmountInvalid.value || isTypeInvalid.value);
 
-let deleteAlert: HTMLIonAlertElement;
-
-const form = reactive<Expense>({
+let form = reactive<ExpenseForm>({
   id: store.getNextId,
   title: '',
   date: format(new Date(), 'yyyy-MM-dd'),
-  amount: undefined,
+  amount: null,
   type: '',
   toSplit: false,
   description: '',
@@ -84,10 +82,9 @@ const onSubmit = async () => {
   if (isFormInvalid.value) {
     return;
   }
-  form.amount = Number(form.amount);
   try {
     await loader.present('Salvando...');
-    await store.saveExpense({...form});
+    await store.saveExpense({...form as Expense});
     toaster.load('Spesa salvata con successo!', 'success');
   } catch (err) {
     if (isAxiosError(err)) {
@@ -104,7 +101,8 @@ const deleteExpense = async () => {
   if (!id) return;
   try {
     await loader.present('Eliminando...');
-    await store.deleteExpense({...form});
+    await alert.dismiss();
+    await store.deleteExpense({...form as Expense});
     toaster.load('Spesa cancellata con successo!', 'success');
   } catch (err) {
     if (isAxiosError(err)) {
@@ -116,18 +114,15 @@ const deleteExpense = async () => {
   }
 };
 
-const deleteButtons: AlertButton[] = [
-  {text: 'Annulla', role: 'cancel'},
-  {text: 'Elimina', role: 'confirm', handler: deleteExpense},
-];
-
 const handleDeleteButtonClick = async () => {
-  deleteAlert = await alertController.create({
+  await alert.present({
     header: 'Elimina spesa',
     message: 'Sicura di voler eliminare questa spesa?',
-    buttons: deleteButtons,
+    buttons: [
+      {text: 'Annulla', role: 'cancel'},
+      {text: 'Elimina', role: 'confirm', handler: deleteExpense},
+    ],
   });
-  await deleteAlert.present();
 };
 
 onIonViewWillEnter(() => {
@@ -136,14 +131,8 @@ onIonViewWillEnter(() => {
     return;
   }
   const expense = store.getById(Number(route.params.id));
-  if (!expense) return;
-  form.id = expense.id;
-  form.title = expense.title;
-  form.date = expense.date;
-  form.amount = expense.amount;
-  form.type = expense.type;
-  form.toSplit = expense.toSplit;
-  form.description = expense.description;
+  if (expense)
+    form = {...expense};
 });
 
 const focusAmountInput = () => {
@@ -226,7 +215,7 @@ const focusAmountInput = () => {
         <ion-checkbox v-model="form.toSplit" class="ion-padding-vertical" label-placement="end">Da dividere con &lt;3
         </ion-checkbox>
         <ion-textarea
-            v-model="form.description"
+            v-model.trim="form.description"
             fill="solid"
             label="Note"
             placeholder="Campo facoltativo"

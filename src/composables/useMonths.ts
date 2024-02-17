@@ -1,41 +1,29 @@
 import {Month} from '@/types/types';
+import {format} from 'date-fns';
+import {it} from 'date-fns/locale';
 
-export const useMonths = (startingMonth: number, startingYear: number): Month[] => {
-    const monthLabels = [
-        'gennaio',
-        'febbraio',
-        'marzo',
-        'aprile',
-        'maggio',
-        'giugno',
-        'luglio',
-        'agosto',
-        'settembre',
-        'ottobre',
-        'novembre',
-        'dicembre',
-    ];
+export const useMonths = () => {
 
-    const populateMonths = () => {
+    const MAX_NUMBER_OF_MONHTS = import.meta.env.VITE_MAX_NUMBER_OF_MONTHS;
+
+    const populate = (startingMonth: number, startingYear: number) => {
         const startDate = new Date(startingYear, startingMonth);
         const currentDate = new Date();
-        const monthsArray: Month[] = [];
         const datePointer = new Date(startDate);
+        const monthsArray: Month[] = [];
 
-        while (datePointer <= currentDate && monthsArray.length <= 24) {
+        while (datePointer <= currentDate && monthsArray.length < MAX_NUMBER_OF_MONHTS) {
             const month = datePointer.getMonth();
             const year = datePointer.getFullYear();
-
             monthsArray.push({
-                label: `${monthLabels[month].toUpperCase()} ${year}`,
+                label: format(datePointer, 'LLLL yyyy', {locale: it}).toUpperCase(),
                 month,
                 year,
             });
-
             datePointer.setMonth(datePointer.getMonth() + 1);
         }
-        return monthsArray;
+        return monthsArray.reverse();
     };
 
-    return populateMonths();
+    return {populateArray: populate};
 };

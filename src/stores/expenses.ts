@@ -58,11 +58,11 @@ export const useExpensesStore = defineStore('expenses', {
             else if (!oldExpense.toSplit && newExpense.toSplit)
                 await updateSheet.addRow(newExpense);
         },
-        
+
         purgeExpenses() {
             const now = new Date();
-            const lessThanTwoYears = (date: string) => differenceInCalendarMonths(now, new Date(date)) <= 24;
-            this.expenses = [...this.expenses.filter(({date}) => lessThanTwoYears(date))];
+            const maxNumberOfMonthsAllowed = import.meta.env.VITE_MAX_NUMBER_OF_MONTHS;
+            this.expenses = [...this.expenses.filter(({date}) => differenceInCalendarMonths(now, date) <= maxNumberOfMonthsAllowed)];
         },
     },
 });
