@@ -1,3 +1,4 @@
+<!--suppress ES6MissingAwait -->
 <script lang="ts" setup>
 import {
   AlertButton,
@@ -57,12 +58,6 @@ const form = reactive<Expense>({
   description: '',
 });
 
-const resetErrors = () => {
-  isDateInvalid.value = false;
-  isAmountInvalid.value = false;
-  isTypeInvalid.value = false;
-};
-
 const validateTitle = () => {
   isTitleInvalid.value = !form.title.trim() || form.title.length > 20;
 };
@@ -82,7 +77,6 @@ const validateType = () => {
 };
 
 const onSubmit = async () => {
-  resetErrors();
   validateTitle();
   validateDate();
   validateAmount();
@@ -94,15 +88,13 @@ const onSubmit = async () => {
   try {
     await loader.present('Salvando...');
     await store.saveExpense({...form});
+    toaster.load('Spesa salvata con successo!', 'success');
   } catch (err) {
     if (isAxiosError(err)) {
-      console.error(err.response?.data.message);
+      toaster.load('Errore nel sincronizzare Google Sheet: ' + err.response?.data.error, 'danger');
     }
   } finally {
-    // noinspection ES6MissingAwait
     loader.dismiss();
-    // noinspection ES6MissingAwait
-    toaster.load('Spesa salvata con successo!', 'success');
     router.back();
   }
 };
@@ -113,15 +105,13 @@ const deleteExpense = async () => {
   try {
     await loader.present('Eliminando...');
     await store.deleteExpense({...form});
+    toaster.load('Spesa cancellata con successo!', 'success');
   } catch (err) {
     if (isAxiosError(err)) {
-      console.error(err.response?.data.message);
+      toaster.load('Errore nel sincronizzare Google Sheet: ' + err.response?.data.error, 'danger');
     }
   } finally {
-    // noinspection ES6MissingAwait
     loader.dismiss();
-    // noinspection ES6MissingAwait
-    toaster.load('Spesa cancellata con successo!', 'success');
     router.back();
   }
 };
@@ -141,7 +131,6 @@ const handleDeleteButtonClick = async () => {
 };
 
 onIonViewWillEnter(() => {
-  resetErrors();
   if (!route.params.id) {
     form.id = store.getNextId;
     return;

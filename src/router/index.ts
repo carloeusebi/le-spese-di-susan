@@ -1,7 +1,7 @@
 import {createRouter, createWebHistory} from '@ionic/vue-router';
 import {RouteRecordRaw} from 'vue-router';
 import HomePage from '../views/HomePage.vue';
-import CreateExpense from '@/views/CreateExpense.vue';
+import ExpenseDetail from '@/views/ExpenseDetail.vue';
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -16,12 +16,12 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/create/',
         name: 'Create',
-        component: CreateExpense,
+        component: ExpenseDetail,
     },
     {
         path: '/expense/:id',
         name: 'Edit',
-        component: CreateExpense,
+        component: ExpenseDetail,
     },
 ];
 
