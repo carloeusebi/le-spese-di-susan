@@ -29,8 +29,9 @@ export const useExpensesStore = defineStore('expenses', {
             if (index !== -1) await this._updateExpense(expense, index);
             else await this._createExpense(expense);
         },
-        deleteExpense(id: number) {
-            this.expenses = [...this.expenses.filter(expense => expense.id != id)];
+        async deleteExpense(expense: Expense) {
+            this.expenses = [...this.expenses.filter(({id}) => expense.id != id)];
+            await useUpdateSheet().deleteRow(expense);
         },
         purgeExpenses() {
             const now = new Date();
@@ -44,8 +45,17 @@ export const useExpensesStore = defineStore('expenses', {
                 await useUpdateSheet().addRow(expense);
             }
         },
-        async _updateExpense(expense: Expense, index: number) {
-            this.expenses[index] = {...expense};
+        async _updateExpense(newExpense: Expense, index: number) {
+            const updateSheet = useUpdateSheet();
+            const oldExpense = this.expenses[index];
+            this.expenses[index] = {...newExpense};
+
+            if (oldExpense.toSplit && newExpense.toSplit)
+                await updateSheet.updateRow(newExpense, oldExpense);
+            else if (oldExpense.toSplit && !newExpense.toSplit)
+                await updateSheet.deleteRow(oldExpense);
+            else if (!oldExpense.toSplit && newExpense.toSplit)
+                await updateSheet.addRow(newExpense);
         },
     },
 });

@@ -31,30 +31,46 @@ export const useUpdateSheet = () => {
         }
     };
 
-    const addRow = async (expense: Expense) => {
-        const date = new Date(expense.date);
-        const tab = `${date.getFullYear()} Expenses`;
-        const url = `${sheetBestUrl}/tabs/${tab}`;
+    const getUrl = (year: number) => `${sheetBestUrl}/tabs/${year} Expenses`;
 
-        if (!expense.toSplit || !expense.amount) {
-            return;
-        }
-
-        const payload = {
+    const createPayload = (expense: Expense, date: Date) => {
+        return {
             M: date.getMonth() + 1,
             D: date.getDate(),
             Expense: expense.title,
-            Amount: (expense.amount / 2),
+            Amount: ((expense.amount as number) / 2),
             Primary: mapType(expense.type),
-            Notes: expense.description,
+            Notes: expense.description || 'Spesa aggiunta da Susan',
         };
+    };
 
+    const createFilters = (expense: Expense) =>
+        `/search?M=${new Date(expense.date).getMonth() + 1}&D=${new Date(expense.date).getDate()}&Expense=${expense.title}&Amount=${(expense.amount! / 2).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        })}`;
+
+    const addRow = async (expense: Expense) => {
+        const date = new Date(expense.date);
+        const url = getUrl(date.getFullYear());
+        const payload = createPayload(expense, date);
         await axios.post(url, payload);
     };
 
-    const updateRow = async (expense: Expense) => {
-
+    const updateRow = async (expense: Expense, oldExpense: Expense) => {
+        const date = new Date(expense.date);
+        const url = getUrl(date.getFullYear());
+        const payload = createPayload(expense, date);
+        const filters = createFilters(oldExpense);
+        await axios.put(url + filters, payload);
     };
 
-    return {addRow, updateRow};
+    const deleteRow = async (expense: Expense) => {
+        const date = new Date(expense.date);
+        const url = getUrl(date.getFullYear());
+        const filters = createFilters(expense);
+        await axios.delete(url + filters);
+    };
+
+    return {addRow, updateRow, deleteRow};
 };

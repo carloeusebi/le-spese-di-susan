@@ -101,18 +101,29 @@ const onSubmit = async () => {
   } finally {
     // noinspection ES6MissingAwait
     loader.dismiss();
+    // noinspection ES6MissingAwait
+    toaster.load('Spesa salvata con successo!', 'success');
+    router.back();
   }
-  // noinspection ES6MissingAwait
-  toaster.load('Spesa salvata con successo!', 'success');
-  router.back();
 };
 
-const deleteExpense = () => {
+const deleteExpense = async () => {
   const id = Number(route.params.id);
   if (!id) return;
-  store.deleteExpense(id);
-  toaster.load('Spesa cancellata con successo!', 'success');
-  router.back();
+  try {
+    await loader.present('Eliminando...');
+    await store.deleteExpense({...form});
+  } catch (err) {
+    if (isAxiosError(err)) {
+      console.error(err.response?.data.message);
+    }
+  } finally {
+    // noinspection ES6MissingAwait
+    loader.dismiss();
+    // noinspection ES6MissingAwait
+    toaster.load('Spesa cancellata con successo!', 'success');
+    router.back();
+  }
 };
 
 const deleteButtons: AlertButton[] = [
