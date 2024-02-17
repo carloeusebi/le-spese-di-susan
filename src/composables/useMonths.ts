@@ -1,4 +1,4 @@
-import {Month} from "@/types/types";
+import {Month} from '@/types/types';
 
 export const useMonths = (startingMonth: number, startingYear: number): Month[] => {
     const monthLabels = [
@@ -22,7 +22,7 @@ export const useMonths = (startingMonth: number, startingYear: number): Month[] 
         const monthsArray: Month[] = [];
         const datePointer = new Date(startDate);
 
-        while (datePointer <= currentDate) {
+        while (datePointer <= currentDate && monthsArray.length <= 24) {
             const month = datePointer.getMonth();
             const year = datePointer.getFullYear();
 
@@ -35,7 +35,7 @@ export const useMonths = (startingMonth: number, startingYear: number): Month[] 
             datePointer.setMonth(datePointer.getMonth() + 1);
         }
         return monthsArray;
-    }
+    };
 
     return populateMonths();
-}
+};

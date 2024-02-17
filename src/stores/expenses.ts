@@ -1,6 +1,7 @@
 import {defineStore} from 'pinia';
 import {useLocalStorage} from '@vueuse/core';
 import {Expense, Month} from '@/types/types';
+import {differenceInCalendarMonths} from 'date-fns';
 
 export const useExpensesStore = defineStore('expenses', {
     state: () => ({
@@ -29,6 +30,11 @@ export const useExpensesStore = defineStore('expenses', {
         },
         deleteExpense(id: number) {
             this.expenses = [...this.expenses.filter(expense => expense.id != id)];
+        },
+        purgeExpenses() {
+            const now = new Date();
+            const lessThanTwoYears = (date: string) => differenceInCalendarMonths(now, new Date(date)) <= 24;
+            this.expenses = [...this.expenses.filter(({date}) => lessThanTwoYears(date))];
         },
         _createExpense(expense: Expense) {
             this.expenses.push(expense);
