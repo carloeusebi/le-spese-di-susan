@@ -41,6 +41,7 @@ const expenses = computed(() => store.thisMonthExpenses(selectedMonth.value));
 const calculateTotal = (expenses: Expense[]) => expenses.reduce((total, expense) => total += Number(expense.amount), 0);
 const monthTotalExpenditure = computed(() => calculateTotal(expenses.value));
 const monthToSplitTotal = computed(() => calculateTotal(expenses.value.filter(expense => expense.toSplit)));
+const monthToSplitHalved = computed(() => monthToSplitTotal.value / 2);
 </script>
 
 <template>
@@ -48,10 +49,10 @@ const monthToSplitTotal = computed(() => calculateTotal(expenses.value.filter(ex
     <ion-header>
       <ion-item>
         <ion-select
-            v-model="selectedMonth"
-            :compare-with="compareWith"
-            label="Scegli un mese"
-            placeholder="Scegli il mese"
+          v-model="selectedMonth"
+          :compare-with="compareWith"
+          label="Scegli un mese"
+          placeholder="Scegli il mese"
         >
           <ion-select-option v-for="month in months" :key="month" :value="month">{{ month.label }}</ion-select-option>
         </ion-select>
@@ -66,7 +67,10 @@ const monthToSplitTotal = computed(() => calculateTotal(expenses.value.filter(ex
         <ion-col>
           <ion-text class="ion-padding-vertical ion-padding-horizontal ion-text-center w-full">
             <div>Da dividere:</div>
-            <div>{{ monthToSplitTotal.toFixed(2) }}€</div>
+            <div>
+              {{ monthToSplitTotal.toFixed(2) }}€
+              ({{ monthToSplitHalved.toFixed(2) }}€)
+            </div>
           </ion-text>
         </ion-col>
       </ion-row>
