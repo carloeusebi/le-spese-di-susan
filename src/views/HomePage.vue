@@ -37,7 +37,6 @@ const compareWith = (m1: Month, m2: Month) => {
 
 const store = useExpensesStore();
 const expenses = computed(() => store.thisMonthExpenses(selectedMonth.value));
-// noinspection JSUnusedAssignment
 const calculateTotal = (expenses: Expense[]) => expenses.reduce((total, expense) => total += Number(expense.amount), 0);
 const monthTotalExpenditure = computed(() => calculateTotal(expenses.value));
 const monthToSplitTotal = computed(() => calculateTotal(expenses.value.filter(expense => expense.toSplit)));
@@ -54,7 +53,9 @@ const monthToSplitHalved = computed(() => monthToSplitTotal.value / 2);
           label="Scegli un mese"
           placeholder="Scegli il mese"
         >
-          <ion-select-option v-for="month in months" :key="month" :value="month">{{ month.label }}</ion-select-option>
+          <ion-select-option v-for="month in months" :key="month.label" :value="month">
+            {{ month.label }}
+          </ion-select-option>
         </ion-select>
       </ion-item>
       <ion-row>
@@ -87,7 +88,7 @@ const monthToSplitHalved = computed(() => monthToSplitTotal.value / 2);
                 </ion-card-header>
                 <ion-card-content>
                   <div class="expense-amount">{{ Number(expense.amount).toFixed(2) }} €</div>
-                  <div class="ion-text-end">{{ expense.type }}</div>
+                  <div class="ion-text-end">{{ expense.type.label }}</div>
                 </ion-card-content>
               </ion-card>
             </router-link>
@@ -100,7 +101,9 @@ const monthToSplitHalved = computed(() => monthToSplitTotal.value / 2);
     </ion-content>
     <ion-footer>
       <ion-row class="ion-padding-vertical ion-justify-content-center">
-        <ion-button router-direction="forward" router-link="/create" size="large">Aggiungi una spesa</ion-button>
+        <router-link to="/create">
+          <ion-button size="large">Aggiungi una spesa</ion-button>
+        </router-link>
       </ion-row>
     </ion-footer>
   </ion-page>

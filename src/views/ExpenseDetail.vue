@@ -1,4 +1,3 @@
-<!--suppress ES6MissingAwait -->
 <script lang="ts" setup>
 import {
   IonButton,
@@ -27,6 +26,7 @@ import {caretBack, trash} from 'ionicons/icons';
 import {useIonLoader} from '@/composables/useIonLoader';
 import {isAxiosError} from 'axios';
 import {useIonAlert} from '@/composables/useIonAlert';
+import {expenseTypes} from '@/consts/expenseTypes';
 
 const store = useExpensesStore();
 const router = useIonRouter();
@@ -36,8 +36,6 @@ const loader = useIonLoader();
 const alert = useIonAlert();
 
 const amountRef = ref<InstanceType<typeof IonInput>>();
-
-const types = ['Casa', 'Salute', 'Spesa', 'Trasporto', 'Animali', 'Fuori', 'Piacere', 'Vacanza', 'Regali', 'Altro'];
 
 const isTitleInvalid = ref(false);
 const isDateInvalid = ref(false);
@@ -50,7 +48,7 @@ let form = reactive<ExpenseForm>({
   id: store.getNextId,
   title: '',
   date: format(new Date(), 'yyyy-MM-dd'),
-  amount: null,
+  amount: undefined,
   type: '',
   toSplit: false,
   description: '',
@@ -85,13 +83,13 @@ const onSubmit = async () => {
   try {
     await loader.present('Salvando...');
     await store.saveExpense({...form as Expense});
-    toaster.load('Spesa salvata con successo!', 'success');
+    await toaster.load('Spesa salvata con successo!', 'success');
   } catch (err) {
     if (isAxiosError(err)) {
-      toaster.load('Errore nel sincronizzare Google Sheet: ' + err.response?.data.error, 'danger');
+      await toaster.load('Errore nel sincronizzare Google Sheet: ' + err.response?.data.error, 'danger');
     }
   } finally {
-    loader.dismiss();
+    await loader.dismiss();
     router.back();
   }
 };
@@ -103,13 +101,13 @@ const deleteExpense = async () => {
     await loader.present('Eliminando...');
     await alert.dismiss();
     await store.deleteExpense({...form as Expense});
-    toaster.load('Spesa cancellata con successo!', 'success');
+    await toaster.load('Spesa cancellata con successo!', 'success');
   } catch (err) {
     if (isAxiosError(err)) {
-      toaster.load('Errore nel sincronizzare Google Sheet: ' + err.response?.data.error, 'danger');
+      await toaster.load('Errore nel sincronizzare Google Sheet: ' + err.response?.data.error, 'danger');
     }
   } finally {
-    loader.dismiss();
+    await loader.dismiss();
     router.back();
   }
 };
@@ -160,52 +158,54 @@ const focusAmountInput = () => {
     <ion-content class="ion-padding-vertical ion-padding-horizontal">
       <form id="expenseForm" @submit.prevent="onSubmit">
         <ion-input
-            v-model.trim="form.title"
-            :class="{'ion-invalid ion-touched': isTitleInvalid}"
-            error-text="Amore il nome!!"
-            fill="solid"
-            label="Nome della spesa"
-            maxlength="20"
-            placeholder="Max 20 caratteri"
-            @ionBlu="validateTitle"
-            @ionInput="validateTitle"
+          v-model.trim="form.title"
+          :class="{'ion-invalid ion-touched': isTitleInvalid}"
+          :maxlength="20"
+          error-text="Amore il nome!!"
+          fill="solid"
+          label="Nome della spesa"
+          placeholder="Max 20 caratteri"
+          @ionBlu="validateTitle"
+          @ionInput="validateTitle"
         />
         <ion-input
-            v-model="form.date"
-            :class="{'ion-invalid ion-touched': isDateInvalid}"
-            error-text="Amore ma che data hai messo?"
-            fill="solid"
-            label="Seleziona giorno"
-            type="date"
-            @ionBlur="validateDate"
-            @ionChange="focusAmountInput"
-            @ionInput="validateDate"
+          v-model="form.date"
+          :class="{'ion-invalid ion-touched': isDateInvalid}"
+          error-text="Amore ma che data hai messo?"
+          fill="solid"
+          label="Seleziona giorno"
+          type="date"
+          @ionBlur="validateDate"
+          @ionChange="focusAmountInput"
+          @ionInput="validateDate"
         />
         <ion-input
-            ref="amountRef"
-            v-model="form.amount"
-            :class="{'ion-invalid ion-touched': isAmountInvalid}"
-            error-text="Amore, sciocchina, ti sei scordata di mettere il prezzo :D"
-            fill="solid"
-            inputmode="decimal"
-            label="Ammontare spesa €"
-            min="0"
-            placeholder="0"
-            step="0.01"
-            type="number"
-            @ionBlur="validateAmount"
-            @ionInput="validateAmount"
+          ref="amountRef"
+          v-model="form.amount"
+          :class="{'ion-invalid ion-touched': isAmountInvalid}"
+          error-text="Amore, sciocchina, ti sei scordata di mettere il prezzo :D"
+          fill="solid"
+          inputmode="decimal"
+          label="Ammontare spesa €"
+          min="0"
+          placeholder="0"
+          step="0.01"
+          type="number"
+          @ionBlur="validateAmount"
+          @ionInput="validateAmount"
         />
         <ion-select
-            v-model="form.type"
-            :class="{'ion-invalid ion-touched': isTypeInvalid}"
-            cancel-text="Annulla"
-            fill="solid"
-            label="Scegli la categoria"
-            @ionChange="validateType"
-            @ionDismiss="validateType"
+          v-model="form.type"
+          :class="{'ion-invalid ion-touched': isTypeInvalid}"
+          cancel-text="Annulla"
+          fill="solid"
+          label="Scegli la categoria"
+          @ionChange="validateType"
+          @ionDismiss="validateType"
         >
-          <ion-select-option v-for="type in types" :key="type">{{ type }}</ion-select-option>
+          <ion-select-option v-for="type in expenseTypes" :key="type.value" :value="type">
+            {{ type.label }}
+          </ion-select-option>
         </ion-select>
         <div v-if="isTypeInvalid" class="input-bottom sc-ion-input-md">
           <div class="sc-ion sc-ion-input-md" style="color: var(--ion-color-danger)">
@@ -215,21 +215,21 @@ const focusAmountInput = () => {
         <ion-checkbox v-model="form.toSplit" class="ion-padding-vertical" label-placement="end">Da dividere con &lt;3
         </ion-checkbox>
         <ion-textarea
-            v-model.trim="form.description"
-            fill="solid"
-            label="Note"
-            placeholder="Campo facoltativo"
-            rows="5"
+          v-model.trim="form.description"
+          :rows="5"
+          fill="solid"
+          label="Note"
+          placeholder="Campo facoltativo"
         />
       </form>
     </ion-content>
     <ion-footer class="ion-padding-vertical ion-padding-horizontal">
       <ion-button
-          :disabled="isFormInvalid"
-          expand="block"
-          form="expenseForm"
-          size="large"
-          type="submit"
+        :disabled="isFormInvalid"
+        expand="block"
+        form="expenseForm"
+        size="large"
+        type="submit"
       >
         Salva
       </ion-button>
